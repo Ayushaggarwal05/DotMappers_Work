@@ -20,6 +20,21 @@ def test_get_stats_endpoint(client, populated_db):
     assert stats["anomaly_count"] > 0
 
 
+def test_get_stats_breakdown_endpoint(client, populated_db):
+    """Verify GET /api/stats/breakdown returns dimensional distributions for charts."""
+    response = client.get("/api/stats/breakdown")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    
+    b = data["data"]
+    assert len(b["by_category"]) == 3
+    assert len(b["by_priority"]) == 4
+    assert len(b["by_status"]) == 3
+    assert len(b["by_agent"]) == 12
+    assert len(b["rating_distribution"]) == 5
+
+
 def test_get_anomalies_endpoint(client, populated_db):
     """Verify GET /api/anomalies returns flagged anomalies with statistics."""
     response = client.get("/api/anomalies?limit=25")
