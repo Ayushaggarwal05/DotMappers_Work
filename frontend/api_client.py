@@ -13,7 +13,7 @@ class ApiClientError(Exception):
 
 
 class ApiClient:
-    """Production-quality HTTP client for communicating with the TracePath AI FastAPI backend."""
+    """Production-quality HTTP client for communicating with the SupportLens AI FastAPI backend."""
 
     def __init__(self, base_url: Optional[str] = None, timeout: float = 12.0):
         self.base_url = (base_url or os.getenv("API_BASE_URL", "http://localhost:8000")).rstrip("/")
@@ -34,7 +34,7 @@ class ApiClient:
                 )
         except requests.exceptions.ConnectionError:
             raise ApiClientError(
-                message=f"Cannot connect to TracePath Backend at {self.base_url}. Ensure the server is running (`python main.py`)."
+                message=f"Cannot connect to SupportLens Backend at {self.base_url}. Ensure the server is running (`python run.py`)."
             )
         except requests.exceptions.Timeout:
             raise ApiClientError(
@@ -60,7 +60,7 @@ class ApiClient:
                 )
         except requests.exceptions.ConnectionError:
             raise ApiClientError(
-                message=f"Cannot connect to TracePath Backend at {self.base_url}. Ensure the server is running (`python main.py`)."
+                message=f"Cannot connect to SupportLens Backend at {self.base_url}. Ensure the server is running (`python run.py`)."
             )
         except requests.exceptions.Timeout:
             raise ApiClientError(

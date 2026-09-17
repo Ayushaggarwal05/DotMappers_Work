@@ -6,7 +6,7 @@ from frontend.api_client import ApiClient, ApiClientError
 
 # Page setup
 st.set_page_config(
-    page_title="TracePath AI | Support Analytics",
+    page_title="SupportLens AI | Support Analytics",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -83,7 +83,7 @@ st.markdown("""
 
 # ================= SIDEBAR =================
 with st.sidebar:
-    st.markdown("## 🛡️ **TracePath AI**")
+    st.markdown("## 🛡️ **SupportLens AI**")
     st.caption("AI-powered customer support intelligence")
     st.markdown("---")
 
@@ -320,7 +320,7 @@ elif nav_choice == "💬 Ask AI":
             value=st.session_state.current_question,
             placeholder="e.g., How many critical tickets are unresolved?"
         )
-        submit_btn = st.form_submit_button("Ask TracePath AI 🚀", type="primary", use_container_width=True)
+        submit_btn = st.form_submit_button("Ask SupportLens AI 🚀", type="primary", use_container_width=True)
 
     # Process query
     active_question = user_input.strip() if submit_btn else (selected_query_from_btn or "")

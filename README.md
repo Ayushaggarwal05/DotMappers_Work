@@ -1,11 +1,11 @@
-# TracePath AI - Customer Support Intelligence Platform
+# SupportLens AI - Customer Support Intelligence Platform
 
-Production-grade, zero-cost AI Customer Support Ticket Analytics system and interactive intelligence dashboard built for the **DOTMappers AI Engineer Assessment** using **Python**, **FastAPI**, **SQLite**, **SQLAlchemy**, **Pydantic**, and **Streamlit**.
+Production-grade, zero-cost AI Customer Support Ticket Analytics system and interactive intelligence dashboard built for the **AI Engineer Assessment** using **Python**, **FastAPI**, **SQLite**, **SQLAlchemy**, **Pydantic**, and **Streamlit**.
 
 ---
 
 ## 1. Project Overview
-**TracePath AI** is an intelligent customer support analytics platform that transforms natural language questions into safe, deterministic analytical queries and statistical anomaly reports over a 500-ticket customer support dataset.
+**SupportLens AI** is an intelligent customer support analytics platform that transforms natural language questions into safe, deterministic analytical queries and statistical anomaly reports over a 500-ticket customer support dataset.
 
 It provides both a complete REST API and an interactive Streamlit UI designed for executives, operations managers, and QA teams.
 
@@ -17,7 +17,7 @@ Customer support organizations struggle to extract real-time operational insight
 2. **Hallucination Risk**: Pure LLM question answering frequently invents counts, averages, and agent metrics.
 3. **Black-box Anomaly Detection**: LLMs are notoriously inconsistent at statistical math and threshold detection.
 
-**TracePath AI** solves this by enforcing a strict **Natural Language → Structured Intent AST → Pydantic Validation → Deterministic Query Compilation & Anomaly Execution** architecture.
+**SupportLens AI** solves this by enforcing a strict **Natural Language → Structured Intent AST → Pydantic Validation → Deterministic Query Compilation & Anomaly Execution** architecture.
 
 ---
 
@@ -25,7 +25,7 @@ Customer support organizations struggle to extract real-time operational insight
 - 💬 **Natural Language Query Engine**: Translates freeform user questions into typed Abstract Syntax Trees (ASTs) without generating raw SQL.
 - 🛡️ **Zero Direct SQL Execution**: Pure parameterized compilation with strict column allowlisting and type-safety.
 - 📊 **Statistical Anomaly Detection**: Deterministic Interquartile Range (IQR) outlier detection ($Q1$, $Q3$, $\text{IQR}$, Upper Threshold) and aged SLA threshold violation tracking ($>24\text{h}$ unresolved High/Critical).
-- 🚀 **Zero-Cost & Free-Tier Evaluator Execution**: Ships with a built-in semantic fallback parser so evaluators can run the full suite at $0.00 cost without requiring an xAI API key. When `XAI_API_KEY` is provided, it seamlessly leverages xAI Grok.
+- 🚀 **Zero-Cost & Free-Tier Evaluator Execution**: Ships with a built-in semantic fallback parser so evaluators can run the full suite at $0.00 cost without requiring an API key. Seamlessly supports **Google Gemini** and **xAI Grok** when keys are provided.
 - 📱 **Interactive Streamlit UI**: 5 dedicated views (Overview Dashboard with Altair charts, Ask AI with 1-click assessment query buttons, Anomaly Center, Ticket Explorer, System Status).
 - ⚡ **Single-Command Startup**: Concurrent execution of FastAPI and Streamlit via `python run.py`.
 - 🧪 **100% Test Coverage**: 47 automated tests covering schema validation, CSV ingestion, REST API endpoints, statistical anomaly logic, and natural language phrasing variations.
@@ -47,10 +47,10 @@ flowchart TD
     API --> Router
 
     subgraph NLP_Layer [LLM & Intent Engine]
-        XAI[xAI Grok Provider / Zero-Cost Fallback]
+        AI[AI Provider: Gemini / Grok / Zero-Cost Fallback]
         Parser[Pydantic JSON AST Parser & Validator]
-        Router -->|NL Question| XAI
-        XAI -->|Strict JSON| Parser
+        Router -->|NL Question| AI
+        AI -->|Strict JSON| Parser
     end
 
     subgraph Execution_Engine [Deterministic Engine]
@@ -85,7 +85,7 @@ flowchart TD
 ## 6. Project Structure
 
 ```
-tracepath-ai/
+supportlens-ai/
 │
 ├── backend/
 │   ├── main.py                  # FastAPI app factory & lifespan auto-ingestion
@@ -108,7 +108,7 @@ tracepath-ai/
 │   │   └── schemas.py           # AnomalyItem & AnomalyReport Pydantic schemas
 │   ├── llm/
 │   │   ├── base.py              # BaseLLMProvider abstract interface
-│   │   ├── xai_provider.py      # xAI Grok client + Zero-Cost Semantic Fallback
+│   │   ├── ai_provider.py       # Unified AIProvider (Gemini + Grok + Fallback)
 │   │   ├── prompts.py           # System prompt, strict JSON schema & few-shots
 │   │   └── parser.py            # Clean JSON extractor & schema validator
 │   ├── query_engine/
@@ -177,7 +177,7 @@ tracepath-ai/
 ---
 
 ## 9. Why LLM Structured Intent Instead of Direct SQL?
-| Aspect | Direct LLM-to-SQL | TracePath Structured Intent AST |
+| Aspect | Direct LLM-to-SQL | SupportLens Structured Intent AST |
 |---|---|---|
 | **SQL Injection Risk** | ❌ Severe (`DROP TABLE`, UNION attacks) | ✅ **Zero** (no raw SQL generated by LLM) |
 | **Schema Hallucination** | ❌ Frequent (imaginary tables/columns) | ✅ **Zero** (strict Pydantic schema validation) |
@@ -212,7 +212,7 @@ API Response Answer: "The average customer rating for Technical category tickets
 ---
 
 ## 11. Anomaly Detection Methodology
-TracePath AI applies deterministic statistical anomaly detection across two distinct rules:
+SupportLens AI applies deterministic statistical anomaly detection across two distinct rules:
 
 ### Rule 1: Long Resolution Time Outliers (Interquartile Range - IQR)
 1. Extracts all resolved tickets with non-null `resolution_time_hrs`.
@@ -279,7 +279,7 @@ Create a `.env` file in the root directory (or copy from `.env.example`):
 
 ```ini
 # Application Settings
-APP_NAME=TracePath AI - Customer Support Analytics
+APP_NAME=SupportLens AI - Customer Support Analytics
 APP_VERSION=1.0.0
 ENVIRONMENT=development
 DEBUG=false
@@ -297,12 +297,19 @@ AUTO_INGEST_ON_STARTUP=true
 # Security & CORS
 CORS_ORIGINS=["http://localhost:3000","http://localhost:8501","http://127.0.0.1:8501"]
 
-# LLM Configuration (Zero-Cost Evaluator Mode: Leave blank to use built-in semantic fallback)
+# LLM / AI Configuration (Supports: "auto", "grok", "gemini", "fallback")
+AI_PROVIDER=auto
+
+# Option 1: Google Gemini
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-1.5-flash
+
+# Option 2: xAI / Grok
 XAI_API_KEY=
 XAI_MODEL=grok-2-latest
 ```
 
-> **Zero-Cost Evaluator Note**: If `XAI_API_KEY` is left blank or omitted, TracePath AI automatically activates its high-precision deterministic semantic fallback parser. No paid accounts or API keys are required to achieve 100% functionality and pass all tests.
+> **Zero-Cost Evaluator Note**: If `GEMINI_API_KEY` and `XAI_API_KEY` are left blank or omitted, SupportLens AI automatically activates its high-precision deterministic semantic fallback parser. No paid accounts or API keys are required to achieve 100% functionality and pass all tests.
 
 ---
 

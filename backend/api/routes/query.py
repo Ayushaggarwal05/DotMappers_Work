@@ -4,7 +4,7 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.llm.xai_provider import XAIProvider
+from backend.llm.ai_provider import AIProvider
 from backend.llm.base import BaseLLMProvider
 from backend.query_engine.executor import QueryExecutor
 from backend.core.logging import logger
@@ -28,7 +28,7 @@ class NaturalLanguageQueryResponse(BaseModel):
 
 def get_llm_provider() -> BaseLLMProvider:
     """Dependency provider for the LLM intent translation engine."""
-    return XAIProvider()
+    return AIProvider()
 
 
 @router.post(

@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application configuration loaded from environment variables and .env file."""
     
     # App Information
-    APP_NAME: str = "TracePath AI - Customer Support Analytics"
+    APP_NAME: str = "SupportLens AI - Customer Support Analytics"
     APP_VERSION: str = "1.0.0"
     ENVIRONMENT: str = "development"
     DEBUG: bool = False
@@ -32,9 +32,18 @@ class Settings(BaseSettings):
         "http://127.0.0.1:8501",
     ]
     
-    # LLM Settings (for subsequent phases)
+    # AI / LLM Provider Configuration
+    AI_PROVIDER: str = "auto"  # "auto", "grok", "gemini", "fallback"
+    AI_API_KEY: Optional[str] = None
+    AI_MODEL: Optional[str] = None
+    
+    # xAI / Grok Settings
     XAI_API_KEY: Optional[str] = None
     XAI_MODEL: str = "grok-2-latest"
+    
+    # Google Gemini Settings
+    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODEL: str = "gemini-1.5-flash"
     
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
