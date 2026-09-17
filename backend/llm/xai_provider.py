@@ -27,15 +27,34 @@ class RuleBasedFallbackProvider(BaseLLMProvider):
     async def generate_intent(self, question: str) -> StructuredIntent:
         q = question.strip().lower()
         
+        # 0. Prompt Injection & Off-Topic Guard
+        unsupported_triggers = [
+            "capital of", "who wrote", "weather", "poem", "recipe", "ignore previous",
+            "drop table", "select * from", "delete from", "insert into", "system prompt",
+            "who is the president", "tell me a joke"
+        ]
+        if any(trigger in q for trigger in unsupported_triggers):
+            return StructuredIntent(
+                intent=QueryIntentType.UNSUPPORTED,
+                metrics=[],
+                group_by=[],
+                filters=[],
+                raw_question=question,
+                confidence=1.0,
+                notes="Off-topic or unsupported input detected"
+            )
+
         # 1. Anomaly detection intent
-        if any(w in q for w in ["anomaly", "anomalies", "outlier", "outliers", "unusual"]):
+        if any(w in q for w in ["anomaly", "anomalies", "outlier", "outliers", "unusual", "abnormal"]):
             rel_period = None
-            if "this week" in q:
+            if "this week" in q or "weekly" in q:
                 rel_period = RelativePeriod.THIS_WEEK
-            elif "this month" in q:
+            elif "this month" in q or "monthly" in q:
                 rel_period = RelativePeriod.THIS_MONTH
             elif "today" in q:
                 rel_period = RelativePeriod.TODAY
+            elif "last week" in q:
+                rel_period = RelativePeriod.LAST_WEEK
 
             return StructuredIntent(
                 intent=QueryIntentType.ANOMALY_DETECTION,
@@ -115,7 +134,7 @@ class RuleBasedFallbackProvider(BaseLLMProvider):
 
         # 7. Extract Dimensions (Group By)
         group_by = []
-        if "each agent" in q or "by agent" in q or "which agent" in q or "per agent" in q:
+        if any(w in q for w in ["each agent", "by agent", "which agent", "per agent", "who is", "who resolved", "leading agent"]):
             group_by.append(DimensionType.AGENT_ID)
         if "by category" in q or "per category" in q or "each category" in q:
             group_by.append(DimensionType.CATEGORY)
@@ -145,7 +164,7 @@ class RuleBasedFallbackProvider(BaseLLMProvider):
         sort = None
         limit = 100
 
-        if any(w in q for w in ["which agent", "top agent", "most tickets", "highest", "lowest", "top"]):
+        if any(w in q for w in ["which agent", "top agent", "most tickets", "highest", "lowest", "top", "leading", "who resolved", "best"]):
             intent_type = QueryIntentType.TOP_N
             is_asc = any(w in q for w in ["lowest", "least", "worst", "bottom"])
             sort_field = metrics[0].value if metrics else "count"
@@ -154,14 +173,14 @@ class RuleBasedFallbackProvider(BaseLLMProvider):
             if not group_by:
                 group_by.append(DimensionType.AGENT_ID)
 
-        elif group_by:
+        elif group_by and not any(w in q for w in ["show", "list", "find", "get", "display"]):
             intent_type = QueryIntentType.GROUP_BY
             sort = SortSpec(field=metrics[0].value if metrics else "count", order=SortOrder.DESC)
 
-        elif any(w in q for w in ["show", "list", "get all", "find all", "details"]):
+        elif any(w in q for w in ["show", "list", "get all", "find all", "details", "find", "get", "display", "fetch", "filter"]):
             intent_type = QueryIntentType.FILTER
 
-        elif any(w in q for w in ["how many", "count", "number of"]):
+        elif any(w in q for w in ["how many", "count", "number of", "total number"]):
             intent_type = QueryIntentType.COUNT
 
         elif metrics and metrics[0] != MetricType.COUNT:
