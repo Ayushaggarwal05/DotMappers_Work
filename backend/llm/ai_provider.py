@@ -249,9 +249,13 @@ class AIProvider(BaseLLMProvider):
             return await self._call_grok(question)
 
     async def _call_grok(self, question: str) -> StructuredIntent:
-        """Call xAI Grok chat completions API."""
-        logger.info(f"Calling xAI / Grok API ({self.model}) for query translation: '{question}'")
-        base_url = "https://api.x.ai/v1/chat/completions"
+        """Call xAI Grok / Groq chat completions API."""
+        is_groq = bool(self.api_key and self.api_key.startswith("gsk_"))
+        base_url = "https://api.groq.com/openai/v1/chat/completions" if is_groq else "https://api.x.ai/v1/chat/completions"
+        model_name = "llama-3.3-70b-versatile" if (is_groq and "grok" in self.model) else self.model
+        
+        provider_label = "Groq" if is_groq else "xAI Grok"
+        logger.info(f"Calling {provider_label} API ({model_name}) for query translation: '{question}'")
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -261,7 +265,7 @@ class AIProvider(BaseLLMProvider):
             {"role": "user", "content": question}
         ]
         payload = {
-            "model": self.model,
+            "model": model_name,
             "messages": messages,
             "temperature": 0.0,
             "response_format": {"type": "json_object"}

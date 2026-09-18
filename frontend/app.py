@@ -15,9 +15,143 @@ st.set_page_config(
 # Initialize API client
 client = ApiClient()
 
-# Custom CSS for polished, high-contrast engineering appearance
+# Custom CSS for polished, human-designed sidebar & engineering interface
 st.markdown("""
 <style>
+    /* ================= SIDEBAR REFINEMENT ================= */
+    section[data-testid="stSidebar"] {
+        background-color: #0F172A !important;
+        border-right: 1px solid #1E293B !important;
+        overflow: hidden !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+
+    section[data-testid="stSidebar"]::-webkit-scrollbar,
+    section[data-testid="stSidebar"] *::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] > div:first-child {
+        padding-top: 1.2rem !important;
+        padding-bottom: 1.2rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        overflow: hidden !important;
+        scrollbar-width: none !important;
+    }
+
+    /* Hide the default Streamlit radio circle and its container */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stRadioButton"],
+    section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+    section[data-testid="stSidebar"] div[role="radiogroup"] label input[type="radio"] {
+        display: none !important;
+    }
+
+    /* Hide default radio widget title if any */
+    section[data-testid="stSidebar"] [data-testid="stRadio"] > label:first-child {
+        display: none !important;
+    }
+
+    /* Clean vertical list spacing */
+    section[data-testid="stSidebar"] div[role="radiogroup"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Nav item base style - clean vertical list without individual borders or cards */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label {
+        display: flex !important;
+        align-items: center !important;
+        padding: 9px 12px !important;
+        margin: 0 !important;
+        border-radius: 6px !important;
+        border-left: 3px solid transparent !important;
+        background-color: transparent !important;
+        cursor: pointer !important;
+        transition: background-color 0.15s ease, border-left-color 0.15s ease, color 0.15s ease !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Nav item text styling */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label [data-testid="stMarkdownContainer"] p {
+        font-size: 0.93rem !important;
+        font-weight: 500 !important;
+        color: #94A3B8 !important;
+        margin: 0 !important;
+        line-height: 1.4 !important;
+        letter-spacing: -0.01em !important;
+        transition: color 0.15s ease !important;
+    }
+
+    /* Subtle professional hover state */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border-left: 3px solid rgba(148, 163, 184, 0.3) !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:hover [data-testid="stMarkdownContainer"] p {
+        color: #E2E8F0 !important;
+    }
+
+    /* Active / selected page navigation item */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked),
+    section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border-left: 3px solid #6366F1 !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) [data-testid="stMarkdownContainer"] p,
+    section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] [data-testid="stMarkdownContainer"] p {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+
+    /* Section Label */
+    .sidebar-nav-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748B;
+        padding: 0 4px 6px 4px;
+        margin-top: 14px;
+    }
+
+    /* Bottom System Information area */
+    .sidebar-system-footer {
+        margin-top: clamp(2.5rem, 14vh, 9rem);
+        padding-top: 14px;
+        padding-left: 4px;
+        padding-right: 4px;
+        border-top: 1px solid #1E293B;
+    }
+
+    .status-primary {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #CBD5E1;
+        letter-spacing: 0.01em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 3px;
+    }
+
+    .status-secondary {
+        font-size: 0.76rem;
+        color: #64748B;
+        font-weight: 400;
+        letter-spacing: 0.01em;
+    }
+
+    /* ================= MAIN CONTENT CARDS ================= */
     /* Metric Cards */
     .metric-card {
         background: #151C2C;
@@ -83,32 +217,56 @@ st.markdown("""
 
 # ================= SIDEBAR =================
 with st.sidebar:
-    st.markdown("## 🛡️ **SupportLens AI**")
-    st.caption("AI-powered customer support intelligence")
-    st.markdown("---")
+    # 1. BRANDING (Larger, prominent header with clean top padding)
+    st.markdown("""
+    <div style="padding: 2px 2px 14px 2px;">
+        <div style="font-size: 23px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; line-height: 1.2;">
+            <span style="font-size: 24px;">🛡️</span> <span>SupportLens AI</span>
+        </div>
+        <div style="font-size: 13.5px; color: #94A3B8; font-weight: 400; margin-top: 3px; padding-left: 2px;">
+            Support intelligence
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
+    # 2. NAVIGATION SECTION LABEL
+    st.markdown('<div class="sidebar-nav-label">Navigation</div>', unsafe_allow_html=True)
+
+    # 3. NAVIGATION ITEMS
     nav_choice = st.radio(
         "Navigation",
         [
             "📊 Overview Dashboard",
             "💬 Ask AI",
             "⚠️ Anomaly Center",
-            "🔍 Ticket Explorer",
+            "🔎 Ticket Explorer",
             "⚙️ System Status"
         ],
-        index=0
+        index=0,
+        label_visibility="collapsed"
     )
 
-    st.markdown("---")
-    
-    # System Status Indicator in Sidebar
+    # 4. BOTTOM SYSTEM INFORMATION (compact, no extra whitespace forcing scroll)
     try:
         health = client.get_health()
-        st.success(f"🟢 Backend: {health.get('status', 'OK').upper()}")
-        st.caption(f"Tickets: **{health['dataset']['loaded_ticket_count']}** | Engine: **SQLite**")
-    except ApiClientError as err:
-        st.error("🔴 Backend Offline")
-        st.caption("Start server: `python main.py`")
+        backend_status = health.get("status", "healthy").upper()
+        loaded_count = health.get("dataset", {}).get("loaded_ticket_count", 500)
+        status_dot = "🟢" if backend_status in ["HEALTHY", "OK"] else "🟡"
+    except Exception:
+        backend_status = "OFFLINE"
+        loaded_count = 0
+        status_dot = "🔴"
+
+    st.markdown(f"""
+    <div class="sidebar-system-footer">
+        <div class="status-primary">
+            <span>{status_dot}</span> Backend · {backend_status}
+        </div>
+        <div class="status-secondary">
+            {loaded_count} tickets · SQLite · Grok
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # ================= PAGE 1: OVERVIEW DASHBOARD =================
@@ -200,7 +358,10 @@ if nav_choice == "📊 Overview Dashboard":
                 .encode(
                     x=alt.X("category:N", title="Category", sort="-y"),
                     y=alt.Y("count:Q", title="Ticket Count"),
-                    color=alt.Color("category:N", legend=None, scale=alt.Scale(scheme="indigo")),
+                    color=alt.Color("category:N", legend=None, scale=alt.Scale(
+                        domain=["Billing", "Technical", "General"],
+                        range=["#6366F1", "#38BDF8", "#F59E0B"]
+                    )),
                     tooltip=["category", "count"]
                 )
                 .properties(height=280)
@@ -435,8 +596,8 @@ elif nav_choice == "⚠️ Anomaly Center":
 
 
 # ================= PAGE 4: TICKET EXPLORER =================
-elif nav_choice == "🔍 Ticket Explorer":
-    st.title("🔍 Support Ticket Explorer")
+elif nav_choice in ["🔎 Ticket Explorer", "🔍 Ticket Explorer"]:
+    st.title("🔎 Support Ticket Explorer")
     st.caption("Search, filter, and inspect records from the 500-ticket dataset.")
 
     try:

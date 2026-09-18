@@ -322,8 +322,26 @@ class QueryExecutor:
         if "count" in summary and len(summary) == 1:
             # Single count
             status_filter = next((f.value for f in intent.filters if f.field == "status"), None)
+            cat_filter = next((f.value for f in intent.filters if f.field == "category"), None)
+            prio_filter = next((f.value for f in intent.filters if f.field == "priority"), None)
+            agent_filter = next((f.value for f in intent.filters if f.field == "agent_id"), None)
+
+            status_str = ""
             if status_filter:
-                return f"There are {summary['count']} {status_filter} tickets in the system."
+                if isinstance(status_filter, list):
+                    status_str = "unresolved " if set(status_filter) == {"Open", "Escalated"} else f"{'/'.join(status_filter)} "
+                else:
+                    status_str = f"{status_filter} "
+            elif intent.unresolved_only:
+                status_str = "unresolved "
+
+            prio_str = f"{prio_filter} " if prio_filter else ""
+            cat_str = f"{cat_filter} " if cat_filter else ""
+            agent_str = f" assigned to {agent_filter}" if agent_filter else ""
+
+            qualifier = f"{status_str}{prio_str}{cat_str}".strip()
+            if qualifier:
+                return f"There are {summary['count']} {qualifier} tickets{agent_str} in the system."
             return f"There are {summary['count']} tickets matching the query."
 
         if "avg_rating" in summary:
@@ -350,10 +368,21 @@ class QueryExecutor:
         if intent.intent == QueryIntentType.TOP_N or (intent.sort and len(data) > 0):
             top_item = data[0]
             if "agent_id" in top_item:
-                count_val = top_item.get("count", 0)
-                return f"Agent {top_item['agent_id']} is the top performer with {count_val} tickets."
+                if "avg_rating" in top_item:
+                    return f"Agent {top_item['agent_id']} has the highest average customer rating of {top_item['avg_rating']} out of 5."
+                elif "avg_resolution_time" in top_item:
+                    return f"Agent {top_item['agent_id']} has the fastest average resolution time of {top_item['avg_resolution_time']} hours."
+                elif "avg_response_time" in top_item:
+                    return f"Agent {top_item['agent_id']} has an average response time of {top_item['avg_response_time']} hours."
+                elif "count" in top_item:
+                    return f"Agent {top_item['agent_id']} is the top performer with {top_item['count']} tickets."
+                else:
+                    return f"Agent {top_item['agent_id']} ranks top with metric {top_item}."
             elif "category" in top_item:
-                return f"Category '{top_item['category']}' has the highest volume with {top_item.get('count', 0)} tickets."
+                if "avg_rating" in top_item:
+                    return f"Category '{top_item['category']}' has an average rating of {top_item['avg_rating']} out of 5."
+                count_val = top_item.get("count", "N/A")
+                return f"Category '{top_item['category']}' has the highest volume with {count_val} tickets."
 
         dim_names = ", ".join([d.value for d in intent.group_by])
         return f"Grouped analysis across {len(data)} distinct {dim_names} segments completed."

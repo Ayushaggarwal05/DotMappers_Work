@@ -152,15 +152,48 @@ class IngestionService:
 
     def ingest_from_file(self, file_path: Optional[Union[str, Path]] = None) -> IngestionStats:
         """
-        Ingest tickets from a CSV file path.
+        Ingest tickets from a CSV file path or an entire directory of CSV files.
         Defaults to settings.dataset_absolute_path if not provided.
         """
         target_path = Path(file_path) if file_path else settings.dataset_absolute_path
         
         logger.info(f"Initiating dataset ingestion from: {target_path}")
         if not target_path.exists():
-            logger.error(f"Dataset file does not exist: {target_path}")
+            logger.error(f"Dataset path does not exist: {target_path}")
             raise DatasetNotFoundError(str(target_path))
+
+        # If target is a directory, ingest all CSV files found in it
+        if target_path.is_dir():
+            csv_files = sorted(list(target_path.glob("*.csv")))
+            if not csv_files:
+                raise IngestionError(f"No CSV files found in directory: {target_path}")
+
+            logger.info(f"Found {len(csv_files)} CSV files in directory: {[f.name for f in csv_files]}")
+            total_processed = 0
+            total_inserted = 0
+            total_updated = 0
+            total_skipped = 0
+            all_errors = []
+            total_duration = 0.0
+
+            for csv_file in csv_files:
+                with open(csv_file, mode="r", encoding="utf-8-sig") as f:
+                    stats = self.ingest_from_csv_stream(f)
+                    total_processed += stats.total_processed
+                    total_inserted += stats.inserted_count
+                    total_updated += stats.updated_count
+                    total_skipped += stats.skipped_count
+                    all_errors.extend(stats.errors)
+                    total_duration += stats.duration_seconds
+
+            return IngestionStats(
+                total_processed=total_processed,
+                inserted_count=total_inserted,
+                updated_count=total_updated,
+                skipped_count=total_skipped,
+                errors=all_errors[:50],
+                duration_seconds=round(total_duration, 3)
+            )
 
         with open(target_path, mode="r", encoding="utf-8-sig") as f:
             return self.ingest_from_csv_stream(f)
